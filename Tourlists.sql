@@ -144,3 +144,68 @@ select name, gender, age, grade from tourlists where 1 = 2;
 
 insert into VIP(name, gender, age, grade)
 select name, gender, age, grade from tourlists where grade = 'VIP';
+
+
+-- [DQL PART] *************************************************
+
+-- 모든 예약자를 조회 합니다.
+select * from tourlists;
+
+-- 모든 예약자의 이름, 성별, 나이를 조회 합니다.
+select name, gender, age from tourlists;
+
+-- 모든 예약자의 이름, 등급, 예약금 + 100을 조회 합니다.
+select name, grade, amount + 100 from tourlists;
+
+-- 모든 예약자의 등급을 중복을 제외하고 추출 합니다.
+select * from tourlists;
+select distinct grade from tourlists;
+
+-- 이름 : , 등급 : , 여행지 : , 예약일자 : 로 출력 합니다.
+select '이름 : ' || name || ', 등급 : ' || grade || ', 여행지 : ' || tplace || ', 예약일자 : ' || bdate from tourlists;
+
+-- 이름이 '전민하'인 예약자를 조회 합니다.
+select * from tourlists where name = '전민하';
+
+-- 예약금이 250 이상, 350 이하인 예약자를 조회 합니다.
+select * from tourlists where amount >= 250 and amount < 350;
+select * from tourlists where amount between 250 and 350;
+
+-- 이름이 '김지섭', '홍진우'인 예약자의 예약상태와 예약일자를 조회 합니다.
+select name, bstate, bdate from tourlists where name in ('김지섭', '홍진우');
+
+-- 예약자 중 '송'씨만 조회 합니다.
+select * from tourlists where name like '송%';
+
+-- 예약자 중 '우'라는 단어가 포함된 사원을 조회 합니다.
+select * from tourlists where name like '%우%';
+
+-- 예약일자를 최신 순으로 정렬 합니다.
+select * from tourlists order by bdate desc;
+
+-- 예약금이 적은 순으로 정렬 합니다.
+select * from tourlists order by amount asc;
+
+-- 예약자명을 '가나다'순으로 정렬 합니다.
+select * from tourlists order by name asc;
+
+-- 'VIP' 등급이 먼저 출력되도록 하고, 예약금이 큰 순으로 정렬 합니다.
+select * from tourlists order by grade asc, amount desc;
+
+-- 예약자 '연원주'와 '이경협'을 제외한 나머지 인원을 조회 합니다.
+select * from tourlists where name not in ('연원주', '이경협');
+
+-- '예약취소'인 예약자를 제외한 나머지 인원을 조회 합니다.
+select * from tourlists where bstate not in ('예약취소');
+
+-- 예약금이 입금된 인원만 조회 합니다.
+update tourlists set amount = null where name in ('전민하', '박정현', '강정훈');
+
+select * from tourlists where amount is not null;
+
+-- 예약상태가 완료이고, 여행지가 '세부'인 예약자를 조회 합니다.
+select * from tourlists where bstate = '완료' and tplace = '세부';
+
+-- 성씨가 '김'씨 이거나, 여성인 예약자를 출력하되, 이름을 내림차순으로 정렬 합니다.
+select * from tourlists where name like '김%' or gender in ('여성')
+order by name desc;
