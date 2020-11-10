@@ -148,64 +148,171 @@ select name, gender, age, grade from tourlists where grade = 'VIP';
 
 -- [DQL PART] *************************************************
 
--- 모든 예약자를 조회 합니다.
+-- (1) 모든 예약자를 조회 합니다.
 select * from tourlists;
 
--- 모든 예약자의 이름, 성별, 나이를 조회 합니다.
+-- (2) 모든 예약자의 이름, 성별, 나이를 조회 합니다.
 select name, gender, age from tourlists;
 
--- 모든 예약자의 이름, 등급, 예약금 + 100을 조회 합니다.
+-- (3) 모든 예약자의 이름, 등급, 예약금 + 100을 조회 합니다.
 select name, grade, amount + 100 from tourlists;
 
--- 모든 예약자의 등급을 중복을 제외하고 추출 합니다.
+-- (4) 모든 예약자의 등급을 중복을 제외하고 추출 합니다.
 select * from tourlists;
 select distinct grade from tourlists;
 
--- 이름 : , 등급 : , 여행지 : , 예약일자 : 로 출력 합니다.
+-- (5) 이름 : , 등급 : , 여행지 : , 예약일자 : 로 출력 합니다.
 select '이름 : ' || name || ', 등급 : ' || grade || ', 여행지 : ' || tplace || ', 예약일자 : ' || bdate from tourlists;
 
--- 이름이 '전민하'인 예약자를 조회 합니다.
+-- (6) 이름이 '전민하'인 예약자를 조회 합니다.
 select * from tourlists where name = '전민하';
 
--- 예약금이 250 이상, 350 이하인 예약자를 조회 합니다.
+-- (7) 예약금이 250 이상, 350 이하인 예약자를 조회 합니다.
 select * from tourlists where amount >= 250 and amount < 350;
 select * from tourlists where amount between 250 and 350;
 
--- 이름이 '김지섭', '홍진우'인 예약자의 예약상태와 예약일자를 조회 합니다.
+-- (8) 이름이 '김지섭', '홍진우'인 예약자의 예약상태와 예약일자를 조회 합니다.
 select name, bstate, bdate from tourlists where name in ('김지섭', '홍진우');
 
--- 예약자 중 '송'씨만 조회 합니다.
+-- (9) 예약자 중 '송'씨만 조회 합니다.
 select * from tourlists where name like '송%';
 
--- 예약자 중 '우'라는 단어가 포함된 사원을 조회 합니다.
+-- (10) 예약자 중 '우'라는 단어가 포함된 사원을 조회 합니다.
 select * from tourlists where name like '%우%';
 
--- 예약일자를 최신 순으로 정렬 합니다.
+-- (11) 예약일자를 최신 순으로 정렬 합니다.
 select * from tourlists order by bdate desc;
 
--- 예약금이 적은 순으로 정렬 합니다.
+-- (12) 예약금이 적은 순으로 정렬 합니다.
 select * from tourlists order by amount asc;
 
--- 예약자명을 '가나다'순으로 정렬 합니다.
+-- (13) 예약자명을 '가나다'순으로 정렬 합니다.
 select * from tourlists order by name asc;
 
--- 'VIP' 등급이 먼저 출력되도록 하고, 예약금이 큰 순으로 정렬 합니다.
+-- (14) 'VIP' 등급이 먼저 출력되도록 하고, 예약금이 큰 순으로 정렬 합니다.
 select * from tourlists order by grade asc, amount desc;
 
--- 예약자 '연원주'와 '이경협'을 제외한 나머지 인원을 조회 합니다.
+-- (15) 예약자 '연원주'와 '이경협'을 제외한 나머지 인원을 조회 합니다.
 select * from tourlists where name not in ('연원주', '이경협');
 
--- '예약취소'인 예약자를 제외한 나머지 인원을 조회 합니다.
+-- (16) '예약취소'인 예약자를 제외한 나머지 인원을 조회 합니다.
 select * from tourlists where bstate not in ('예약취소');
 
--- 예약금이 입금된 인원만 조회 합니다.
+-- (17) 예약금이 입금된 인원만 조회 합니다.
 update tourlists set amount = null where name in ('전민하', '박정현', '강정훈');
 
 select * from tourlists where amount is not null;
 
--- 예약상태가 완료이고, 여행지가 '세부'인 예약자를 조회 합니다.
+-- (18) 예약상태가 완료이고, 여행지가 '세부'인 예약자를 조회 합니다.
 select * from tourlists where bstate = '완료' and tplace = '세부';
 
--- 성씨가 '김'씨 이거나, 여성인 예약자를 출력하되, 이름을 내림차순으로 정렬 합니다.
+-- (19) 성씨가 '김'씨 이거나, 여성인 예약자를 출력하되, 이름을 내림차순으로 정렬 합니다.
 select * from tourlists where name like '김%' or gender in ('여성')
 order by name desc;
+
+
+-- [Function PART] *************************************************
+
+-- [문자열 함수]
+
+-- (1) 이름은 OOO이고, 예약금은 OOO 입니다.
+select concat(concat(concat('이름은 ', name), concat('이고, 예약금은 ', amount)), '입니다.')
+as result from tourlists;
+
+-- (2) 예약일자를 연도까지만 추출 합니다.
+select substr(bdate, 1, 4) from tourlists;
+
+-- (3) 예약일자를 월과 일까지만 추출 합니다.
+select substr(bdate, 6, 10) from tourlists;
+
+-- (4) 예약일자를 일까지만 추출 합니다.
+select substr(bdate, -2, 2) from tourlists;
+
+-- (5) 예약자의 이름이 몇글자인지 확인 합니다.
+select name, length(name) as 글자_개수 from tourlists;
+
+-- (6) 예약자의 이름에 '정'이 들어 있는지 확인 합니다.
+select name, instr(name, '정') from tourlists;
+
+-- (7) 이름에 '우'가 들어간 모든 예약자를 확인 합니다.
+select * from tourlists where instr(name, '우') > 0;
+
+-- (8) 예약자 이름에 '우'를 '민'으로 변경 합니다.
+select name, replace(name, '우', '민') from tourlists;
+
+-- (9) 예약자의 이름을 거꾸로 변경 합니다.
+select name, reverse(name) from tourlists;
+
+-- (10) 예약자의 이름을 내림차순으로 정렬하고 공백에 특수문자를 채웁니다.
+select name, rpad(name, 10, '★') from tourlists order by name desc;
+
+
+-- [숫자형 함수]
+
+-- (1) 예약금을 ceil() 올림, floor() 버림 합니다.
+select name, amount, ceil(amount), floor(amount) from tourlists;
+
+-- (2) 예약금을 소수점 둘째자리까지 반올림 합니다.
+select name, round(amount, 2) as amount from tourlists;
+
+-- (3) 모든 예약금을 절대 값으로 변경하고 루트를 씌운 결과를 출력 합니다. (소수점 둘째자리 반올림)
+select name, round(sqrt(abs(amount)), 2) as amount from tourlists;
+
+-- (4) 모든 예약금을 2제곱 합니다.
+select name, power(amount, 2) as amount from tourlists;
+
+-- (5) 예약금의 부호를 확인 합니다. (양수 1, 음수 -1, 0이면 0)
+select name, amount, sign(amount) from tourlists;
+
+
+-- [날짜 관련 함수]
+
+-- (1) 날짜 데이터 포맷을 변경 합니다.
+ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY/MM/DD';
+
+-- (2) 예약일로부터 3개월 전 시간을 구합니다.
+select name, add_months(bdate, - 3) as 예약일 from tourlists;
+
+-- (3) 모든 예약 건이 최초 예약일로부터 몇개월이 지났는지 확인 합니다.
+select name, round(months_between(sysdate, bdate), 2) as 경과일 from tourlists;
+
+-- (4) '송득형'과 '연원주'의 예약일자를 3개월 후로 변경 합니다.
+update tourlists set bdate = add_months(bdate, + 3) where name in ('송득형', '연원주');
+
+-- (5) '예약취소' 상태인 예약 건을 현재 일자로 변경 합니다.
+update tourlists set bdate = sysdate where bstate in ('예약취소');
+
+
+-- [null 관련 함수] 
+
+-- (1) 모든 예약자의 예약금을 조회 합니다. (예약금이 존재하지 않는 경우 150으로 설정)
+select name, nvl(amount, 150) as newamount from tourlists;
+
+-- (2) 모든 예약자의 예약금을 조회 합니다. (예약금 입금 여부를 코멘트 합니다)
+select name, nvl2(amount, '입금완료', '입금대기') as bookstate from tourlists;
+
+-- (3) 모든 예약자의 에악상태를 조회 합니다. (단, 예약취소인 경우에는 null 값으로 처리)
+select name, nullif(bstate, '예약취소') as 예약상태 from tourlists;
+
+
+-- [Case 구문]
+
+-- (1) 예약자의 이름과 예약금과 파생 결과를 출력 합니다.
+-- 예약금이 200 이상이면 '우수', 300 이상이면 'VIP'를 출력 합니다.
+
+select name, amount,
+case
+when nvl(amount, 150) >= 300 then 'VIP'
+when nvl(amount, 150) >= 200 then '우수'
+else '일반' end as grade
+from tourlists;
+
+-- (2) 예약자의 이름과 나이와 파생 결과를 출력 합니다.
+-- 나이가 40대 이상이면 '중년', 30대 이상이면 '청년', 20대인 경우 '학생'으로 분류
+
+select name, age,
+case
+when age >= 40 then '중년'
+when age >= 30 then '청년'
+else '학생' end as ageg
+from tourlists;
