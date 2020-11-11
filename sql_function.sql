@@ -261,3 +261,225 @@ when 3 then '3사분기'
 else '4사분기' end as quarter
 from employees;
 
+-- [집합 연산자]
+create table set_a(val number);
+create table set_b(val number);
+
+insert into set_a(val) values(1);
+insert into set_a(val) values(2);
+insert into set_a(val) values(3);
+insert into set_a(val) values(4);
+
+insert into set_b(val) values(3);
+insert into set_b(val) values(4);
+insert into set_b(val) values(5);
+insert into set_b(val) values(6);
+
+commit;
+
+select * from set_a union select * from set_b;
+select * from set_a union all select * from set_b;
+select * from set_a intersect select * from set_b;
+select * from set_a minus select * from set_b;
+
+-- 사원 테이블에서 '남자'만 추출하여 테이블 table01을 만듭니다.
+-- 단, '김구'는 제외 하도록 하고, '여자' 중에서 '미혼자'만 추가 합니다.
+create table table01
+as
+select * from employees where gender = '남자' and id <> 'kim9';
+
+insert into table01
+select * from employees
+where gender = '여자' and marriage = '미혼';
+
+-- 사원 테이블에서 '여자'만 추출하여 테이블 table02을 만듭니다.
+-- '남자' 중에서 '결혼'한 사원만 추가 합니다.
+create table table02
+as
+select * from employees where gender = '여자';
+
+insert into table02
+select * from employees
+where gender = '남자' and marriage = '결혼';
+
+select * from table01;
+select * from table02;
+commit;
+
+-- 합집합
+select * from table01 union all select * from table02;
+
+select id, name, address from table01 
+union 
+select id, name, address from table02;
+
+-- 교집합 
+select id, name, address from table01 
+intersect
+select id, name, address from table02 
+order by name desc;
+
+-- minus
+select id, name, address from table01 
+minus
+select id, name, address from table02 
+order by name desc;
+
+select id, name, address from table02
+minus
+select id, name, address from table01 
+order by name desc;
+
+-- 파생 컬럼도 가능
+-- 별칭은 첫 번째 SQL 구문에만 작성 합니다. 
+select id, name, address, '구사원' as remark from table01 
+union
+select id, name, address, '신사원' from table02 
+order by name desc;
+
+-- 문법적으로는 맞지만, 논리적으로는 틀린 문장
+-- 컬럼의 이름은 첫 번째 SQL 구문의 이름을 따릅니다.
+select id, address, name from table01 
+union
+select id, name, address from table02 
+order by name desc;
+
+
+-- [그룹 함수]
+
+-- 모든 사원의 수를 구합니다.
+select count(*) from employees;
+
+-- 급여가 null이 아닌 사원의 수를 구합니다.
+select count(salary) from employees;
+
+-- 급여가 null인 행수는 몇개인지 구합니다.
+select (count(*) - count(salary)) as result from employees;
+
+-- marriage 컬럼은 총 몇 행인지 확인 합니다.
+select count(marriage) from employees;
+
+-- marriage 컬럼에는 몇가지 유형의 데이터가 있는지 확인 합니다.
+select count(distinct marriage) from employees;
+
+-- 급여의 총금액을 구합니다.
+select sum(salary) from employees;
+
+-- 급여의 총금액을 구하되, null인 사원은 100으로 치환하여 계산 합니다.
+select sum(nvl(salary, 100)) from employees;
+
+-- 급여의 평균을 구합니다.
+select avg(salary) from employees;
+
+-- 급여의 평균을 구하되, null인 사원은 100으로 치환하여 계산 합니다.
+select avg(nvl(salary, 100)) from employees;
+
+-- 최대 급여와 최소 급여는 얼마인지 확인 합니다.
+select max(salary) , min(salary) from employees;
+
+-- 아이디를 기준으로 가장 먼저 조회되는 아이디를 확인 합니다.
+select min(id) from employees;
+
+-- 이름을 기준으로 가장 나중에 조회되는 아이디를 확인 합니다.
+select max(name) from employees;
+
+-- 남녀가 각 몇 명인지 확인 합니다.
+select gender, count(*) as cnt 
+from employees
+group by gender
+order by gender desc;
+
+-- 남녀 각각 급여의 총합 및 최소 급여를 구합니다.
+-- 단, 급여가 null이면 100으로 변경하여 계산 합니다.
+select gender, sum(nvl(salary, 100)) as sum, min(nvl(salary, 100)) as min
+from employees
+group by gender;
+
+-- 결혼 유형(marriage 컬럼)은 각각 몇명인지 확인 합니다.
+select marriage, count(*) as cnt
+from employees
+group by marriage;
+
+-- 지역별(address) 각각 몇명이 거주하는지 확인 합니다.
+select address, count(*) as cnt
+from employees
+group by address;
+
+-- 성별, 지역별 각각 몇명이 거주하는지 확인 합니다.
+select gender, address, count(*) as cnt
+from employees
+group by gender, address
+order by gender, address;
+
+-- 성별, 결혼 유무별 각각 몇명인지 확인 합니다.
+select gender, marriage, count(*) as cnt
+from employees
+group by gender, marriage
+order by gender, marriage;
+
+-- '서대문구'에 거주하는 남녀는 각각 몇명인지 확인 합니다.
+select gender, count(*) as cnt
+from employees
+where address = '서대문'
+group by gender
+order by gender;
+
+-- 생일이 존재하는 기혼자의 남녀별 급여의 총액을 구합니다.
+select gender, sum(salary) as sum
+from employees
+where birth is not null and marriage = '결혼'
+group by gender
+order by gender;
+
+-- 성별, 결혼 유무별 각각 몇명인지 조회 하되, 3명 이상만 조회 되도록 합니다.
+select gender, marriage, count(*) as cnt
+from employees
+group by gender, marriage
+having count(*) >= 3
+order by gender, marriage;
+
+-- 남녀 각각 급여의 총합 중에서 총합이 2000미만인 행만 조회 합니다.
+select gender, sum(nvl(salary, 100)) as sum
+from employees
+group by gender
+having sum(nvl(salary, 100)) < 2000
+order by gender;
+
+-- 결혼 유무별 최대 급여와 최소 급여를 조회 합니다. 
+-- 단, 최대 급여와 최소 급여가 100이상이어야 합니다.
+select marriage, max(salary), min(salary)
+from employees
+group by marriage
+having (max(salary) - min(salary)) >= 100
+order by marriage;
+
+-- 관리자가 아닌 일반 사원 중 성별이 6명 이하인 데이터만 조회 합니다.
+select gender, count(*) as cnt
+from employees
+where manager is not null
+group by gender
+having count(*) <= 6;
+
+-- 관리자가 아닌 일반 사원 중에서 결혼 유무 별로 급여의 총액이 1000이상인 행만 조회 합니다.
+select marriage, sum(salary) as sum
+from employees
+where manager is not null
+group by marriage
+having sum(salary) >= 1000;
+
+-- [무엇인지 문제인지 확인 합니다]
+-- gender 컬럼을 없애면 전체 사원의 수가 확인 됩니다.
+select gender, count(*) from employees;
+
+-- group by 절에 gender를 명시하면 됩니다.
+select gender, count(*) from employees group by gender;
+
+-- where 절에는 그룹 함수를 명시할 수 없습니다.
+-- 대신 having 절에 사용 합니다.
+select gender, count(*) from employees 
+where count(*) > 5
+group by gender;
+
+select gender, count(*) from employees 
+group by gender
+having count(*) > 5;
