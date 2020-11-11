@@ -316,3 +316,109 @@ when age >= 40 then '중년'
 when age >= 30 then '청년'
 else '학생' end as ageg
 from tourlists;
+
+
+-- [집합 연산]
+-- tourlists 테이블에서 'VIP'만 추출하여 테이블 'VIP_TB'를 만듭니다.
+-- 데이터 추가) 성별이 여성이거나 예약상태가 완료인 예약자만 추가
+create table vip_tb
+as
+select * from tourlists where grade = 'VIP';
+
+insert into vip_tb
+select * from tourlists
+where gender = '여성' and bstate = '완료';
+
+select * from vip_tb;
+
+-- tourlists 테이블에서 '우수'만 추출하여 테이블 'GRATE_TB'를 만듭니다.
+-- 데이터 추가) 성별이 남성이거나 예약상태가 취소인 예약자만 추가
+create table great_tb
+as
+select * from tourlists where grade = '우수';
+
+insert into great_tb
+select * from tourlists
+where gender = '남성' and bstate = '예약취소';
+
+select * from great_tb;
+commit;
+
+-- (1) Union 
+select name, gender, age, grade, bstate from vip_tb
+union
+select name, gender, age, grade, bstate from great_tb;
+
+-- (2) Union All
+select * from vip_tb union all select * from great_tb;
+
+-- (3) Intersect
+select name, gender, age, grade, bstate from vip_tb
+intersect
+select name, gender, age, grade, bstate from great_tb;
+ 
+-- (4) Minus
+select name, gender, age, grade from vip_tb
+minus
+select name, gender, age, grade from great_tb
+order by name desc;
+
+select name, gender, age, grade from great_tb
+minus
+select name, gender, age, grade from vip_tb
+order by name desc;
+
+
+-- [Group 함수]
+
+-- (1) 모든 예약자의 수를 구합니다.
+select count(*) from tourlists;
+
+-- (2) 입금액이 null인 행 수를 구합니다.
+select count(*) - count(amount) from tourlists;
+
+-- (3) 'GRADE' 컬럼에 몇 가지 유형의 데이터가 있는지 확인 합니다.
+select count(distinct grade) from tourlists;
+
+-- (4) 예약금의 총액을 구합니다.
+select sum(amount) from tourlists;
+
+-- (5) 여행지별 예약자가 각각 몇 명인지를 확인 합니다.
+select tplace, count(*) as cnt
+from tourlists
+group by tplace;
+
+-- (6) 남녀가 각각 몇 명인지를 확인 합니다.
+select gender, count(*) as cnt
+from tourlists
+group by gender;
+
+-- (7) 예약 상태와 최소 예약금, 최대 예약금을 조회 합니다.
+-- 단, 에약금이 null인 경우 150으로 설정
+select bstate, min(nvl(amount, 150)) as "최소 예약금", max(nvl(amount, 150)) as "최대 예약금"
+from tourlists
+group by bstate
+order by bstate;
+
+-- (8) 예약이 완료된 건의 모든 예약금의 평균을 구합니다. 
+-- 단, 여행지가 세부인 경우 제외, 예약금이 null인 경우 150으로 설정
+select bstate as "예약 상태", round(avg(nvl(amount, 150)),2) as "평균"
+from tourlists
+where tplace not in ('세부') and bstate = '완료'
+group by bstate
+order by bstate;
+
+-- (9) 성별, 등급 별로 각각 몇 명인지 조회하되, 2명 이상만 조회되도록 합니다.
+select gender, grade, count(*) as cnt
+from tourlists
+group by gender, grade
+having count(*) >= 2
+order by gender, grade;
+
+-- (10) 예약일 중 최신 예약건을 구합니다.
+-- 단, 2020년 7월 이전 예약 건은 제외
+select name, gender, grade, max(bdate) as "최신 예약건"
+from tourlists
+group by name, gender, grade, bdate
+having max(bdate) >= '2020/07/01' 
+order by bdate;
