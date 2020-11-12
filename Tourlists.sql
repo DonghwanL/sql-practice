@@ -1,8 +1,9 @@
 -- [DDL PART] *************************************************
 
 -- Tourlist 테이블 생성 
-create table Tourlist(
-    name varchar2(30) primary key,
+create table Tourlists(
+    id varchar2(30) primary key,
+    name varchar2(30) not null,
     gender varchar2(10) not null,
     age number not null,
     tplace varchar2(20) not null,
@@ -13,41 +14,38 @@ create table Tourlist(
 );
 
 -- 데이터 추가
-insert into Tourlist(name, gender, age, tplace, price, grade, bstate, bdate)
-values('강정훈', '남성', 32, '미국', 420, '우수', '완료', '2020/03/15');
-insert into Tourlist(name, gender, age, tplace, price, grade, bstate, bdate)
-values('송예나', '여성', 23, '독일', 310, '일반', '완료', '2020/09/30');
-insert into Tourlist(name, gender, age, tplace, price, grade, bstate, bdate)
-values('지현우', '남성', 37, '홍콩', 180, 'VIP', '완료', '2020/05/03');
-insert into Tourlist(name, gender, age, tplace, price, grade, bstate, bdate)
-values('송득형', '남성', 51, '페루', 390, 'VIP', '완료', '2019/11/20');
-insert into Tourlist(name, gender, age, tplace, price, grade, bstate, bdate)
-values('연원주', '여성', 35, '핀란드', 298, '우수', '완료', '2020/02/17');
-insert into Tourlist(name, gender, age, tplace, price, grade, bstate, bdate)
-values('김지섭', '남성', 28, '스페인', 270, '일반', '완료', '2020/04/18');
-insert into Tourlist(name, gender, age, tplace, price, grade, bstate, bdate)
-values('박하영', '여성', 42, '영국', 320, '우수', '완료', '2020/09/07');
-insert into Tourlist(name, gender, age, tplace, price, grade, bstate, bdate)
-values('홍진우', '남성', 24, '중국', 115, '일반', '완료', '2020/10/11');
-insert into Tourlist(name, gender, age, tplace, price, grade, bstate, bdate)
-values('이경협', '남성', 40, '일본', 92, 'VIP', '완료', '2020/10/29');
-insert into Tourlist(name, gender, age, tplace, price, grade, bstate, bdate)
-values('전민하', '여성', 26, '러시아', 200, '일반', '완료', 2020/06/12);
+insert into Tourlists(id, name, gender, age, tplace, price, grade, bstate, bdate)
+values('kangjh', '강정훈', '남성', 32, '미국', 420, '우수', '완료', '2020/03/15');
+insert into Tourlists(id, name, gender, age, tplace, price, grade, bstate, bdate)
+values('soong1','송예나', '여성', 23, '독일', 310, '일반', '완료', '2020/09/30');
+insert into Tourlists(id, name, gender, age, tplace, price, grade, bstate, bdate)
+values('ji3618', '지현우', '남성', 37, '홍콩', 180, 'VIP', '완료', '2020/05/03');
+insert into Tourlists(id, name, gender, age, tplace, price, grade, bstate, bdate)
+values('sdhkk', '송득형', '남성', 51, '페루', 390, 'VIP', '완료', '2019/11/20');
+insert into Tourlists(id, name, gender, age, tplace, price, grade, bstate, bdate)
+values('wonju', '연원주', '여성', 35, '핀란드', 298, '우수', '완료', '2020/02/17');
+insert into Tourlists(id, name, gender, age, tplace, price, grade, bstate, bdate)
+values('jusubi', '김지섭', '남성', 28, '스페인', 270, '일반', '완료', '2020/04/18');
+insert into Tourlists(id, name, gender, age, tplace, price, grade, bstate, bdate)
+values('parkhay', '박하영', '여성', 42, '영국', 320, '우수', '완료', '2020/09/07');
+insert into Tourlists(id, name, gender, age, tplace, price, grade, bstate, bdate)
+values('hongs', '홍진우', '남성', 24, '중국', 115, '일반', '완료', '2020/10/11');
+insert into Tourlists(id, name, gender, age, tplace, price, grade, bstate, bdate)
+values('leegzz', '이경협', '남성', 40, '일본', 92, 'VIP', '완료', '2020/10/29');
+insert into Tourlists(id, name, gender, age, tplace, price, grade, bstate, bdate)
+values('miha98', '전민하', '여성', 26, '러시아', 200, '일반', '완료', 2020/06/12);
 
-select * from tourlist;
+select * from tourlists;
 desc tourlist;
 commit;
 
 -- CTAS 기법을 활용한 비어있는 임시 테이블 생성하기
 create table Tourlist01
 as
-select * from Tourlist where 1=2;
+select * from Tourlist01 where 1=2;
 
 -- 컬럼 이름 변경 및 수정
-alter table tourlist rename column price to amount;
-
--- 테이블 이름 변경 및 수정
-rename tourlist to tourlists;
+alter table tourlists rename column price to amount;
 
 -- 해당 컬럼의 길이 늘이기
 desc tourlists;
@@ -422,3 +420,135 @@ from tourlists
 group by name, gender, grade, bdate
 having max(bdate) >= '2020/07/01' 
 order by bdate;
+
+
+-- [JOIN PART] *************************************************
+
+-- 게시물 테이블 및 관련 시퀀스를 생성 합니다. 
+create sequence seq_board_t;
+
+create table t_boards(
+    no number primary key,
+    writer varchar2(30),
+    subject varchar2(50),
+    content varchar2(50),
+    readhit number default 0,
+    regdate date default sysdate
+);
+
+alter table t_boards
+add constraint t_boards_writer_fk
+foreign key(writer)
+references tourlists(id)
+on delete set null;
+
+-- 게시물 데이터를 등록 합니다.
+insert into t_boards(no, writer, subject, content, readhit, regdate)
+values(seqboard.nextval, 'parkhay', '예약 건 변경 문의', '여행지를 변경하고 싶습니다', default, '2020/09/13');
+insert into t_boards(no, writer, subject, content, readhit, regdate)
+values(seqboard.nextval, 'parkhay', '예약 건 변경이 안되었어요', '전화로 상담 요청', default, '2020/09/15');
+
+insert into t_boards(no, writer, subject, content, readhit, regdate)
+values(seqboard.nextval, 'wonju', '예약 건 취소 하겠습니다~', '취소 문의', default, '2020/10/01');
+insert into t_boards(no, writer, subject, content, readhit, regdate)
+values(seqboard.nextval, 'wonju', '취소 건 환불', '환불계좌는 632183122212', default, '2020/10/03');
+
+insert into t_boards(no, writer, subject, content, readhit, regdate)
+values(seqboard.nextval, 'jusubi', '마일리지 관련해서 질문', '마일리지 문의', default, '2020/05/12');
+insert into t_boards(no, writer, subject, content, readhit, regdate)
+values(seqboard.nextval, 'jusubi', '등급 상향은 언제 되나요?', '몇일자로 등급 상향이 될까요?', default, '2020/06/13');
+
+commit;
+
+-- [Equi Inner Join]
+-- 게시물을 작성한 사람의 이름과 글제목과 내용을 출력 합니다.
+select t.name, b.subject, b.content
+from tourlists t join t_boards b
+on t.id = b.writer;
+
+-- [Non-equi Inner Join]
+-- 등급 평가용 테이블을 작성 합니다.
+create table t_grades(
+    glevel varchar2(30), 
+    lowamt number,
+    highamt number
+);
+
+insert into t_grades values('일반', 0, 100);
+insert into t_grades values('우수', 150, 200);
+insert into t_grades values('VIP', 250, 400);
+
+commit;
+
+-- 각 예약자의 이름, 등급, 예약금을 출력 합니다.
+select t.name, t.grade, g.glevel
+from tourlists t, t_grades g
+where t.grade between g.lowamt and g.highamt;
+
+-- [Outer Join] 
+-- 게시물을 개재한 예약자의 이름과 게시물 제목과 내용을 조회 합니다.
+-- 단 게시물을 남기지 않은 예약자도 같이 조회 합니다.
+select t.name, b.subject, b.content
+from tourlists t left outer join t_boards b
+on t.id = b.writer;
+
+-- 게시물을 개재한 예약자의 이름과 게시물 제목과 내용을 조회 합니다.
+select t.name, b.subject, b.content
+from tourlists t right outer join t_boards b
+on t.id = b.writer;
+
+-- 각 예약자들이 몇 건의 게시물을 남겼는지 확인 합니다.
+-- 게시물을 남기지 않은 예약자는 0로 출력 합니다. 
+select t.name, count(writer) as cnt
+from tourlists t left outer join t_boards b
+on t.id = b.writer
+group by t.name
+order by t.name desc;
+
+-- [Self Join]
+
+
+-- [SUBQUERY PART] *************************************************
+
+-- [단일행 서브쿼리] 
+
+-- (1) 평균보다 많은 예약금을 지불한 예약자의 이름과 예약금을 조회 합니다.
+select name, amount
+from tourlists
+where amount >= (select avg(amount) from tourlists);
+
+-- (2) 예약자 '연원주'보다 적은 예약금인 예약자들의 이름과, 예약금을 조회 합니다.
+select name, amount
+from tourlists
+where amount < (select amount from tourlists where id = 'wonju');
+
+-- (3) 예약상태가 완료이면서 예약일자가 2020/07/01일 이후인 예약자를 조회 합니다.
+select name, id, bstate, bdate
+from tourlists
+where bstate in (select bstate from tourlists where bstate = '완료')
+and bdate >= '2020/07/01';
+
+-- [다중행 서브쿼리] 
+
+-- (1) 등급이 VIP인 예약자들의 이름, 아이디, 성별을 조회 합니다.
+select name, id, gender, grade
+from tourlists
+where id in (select id from tourlists where grade = 'VIP');
+
+-- (2) 예약상태가 '예약취소'가 아닌 예약자들의 이름, 아이디, 성별을 조회 합니다.
+select name, id, gender
+from tourlists
+where id not in (select id from tourlists where bstate = '예약취소');
+
+-- (3) 예약상태 별 최저 예약금인 예약자의 이름, 아이디, 성별, 예약금, 에약상태를 출력 합니다.
+select name, id, gender, amount, bstate
+from tourlists
+where (bstate, amount) in (select bstate, min(amount) from tourlists group by bstate);
+
+-- (4) 등급이 '우수'인 예약자 중에서 최소 예약금인 인원보다 예약금이 많은 인원을 조회 합니다.
+select name, amount from tourlists
+where amount > any (select amount from tourlists where grade = '우수');
+
+-- (5) 등급이 '우수'인 예약자 중에서 최소 예약금인 인원보다 예약금이 적은 인원을 조회 합니다.
+select name, amount from tourlists
+where amount < all (select amount from tourlists where grade = '우수');
