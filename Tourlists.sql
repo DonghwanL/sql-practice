@@ -552,3 +552,166 @@ where amount > any (select amount from tourlists where grade = '우수');
 -- (5) 등급이 '우수'인 예약자 중에서 최소 예약금인 인원보다 예약금이 적은 인원을 조회 합니다.
 select name, amount from tourlists
 where amount < all (select amount from tourlists where grade = '우수');
+
+
+-- [VIEW PART] *************************************************
+-- [mango 사용자에게 보여줄 view 테이블 생성]
+create or replace view mangov
+as
+select id, name, age, tplace, grade from tourlists;
+
+select * from mangov;
+
+-- [객체 권한을 부여 (to mango : 정상 조회 확인)]
+grant select on mangov to mango;
+
+desc mangov;
+select view_name, text from user_views order by view_name;
+
+-- [데이터 사전으로 결과 조회]
+select view_name, text from user_views
+where view_name = 'MANGOV'
+order by view_name;
+
+-- [뷰를 이용한 간접적인 데이터 추가]
+create or replace view mangov1
+as
+select id, name, gender, age, tplace from tourlists;
+
+desc mangov1;
+
+insert into mangov1 values('junghu', '윤정후', '남성', 45, '미국');
+
+select * from mangov1;
+
+-- [view 문장으로 조인]
+create or replace view mangov2
+as
+select t.id, t.name, t.gender, b.subject, b.content
+from tourlists t join t_boards b
+on t.id = b.writer;
+
+select * from mangov2;
+
+-- [with check option]
+create or replace view mangov3
+as
+select * from tourlists
+where grade = 'VIP'
+with check option;
+
+select * from mangov3;
+
+-- VIP 등급에 해당되는 예약자는 with check option에 의해서 수정 불가
+update mangov3 set grade = '우수'
+where id = 'ji3618';
+
+-- [with read only]
+create or replace view mangov4
+as
+select * from tourlists
+where grade = 'VIP'
+with read only;
+
+select * from mangov4;
+
+-- VIP 등급에 해당되는 예약자는 with read only로 인해 수정 불가
+update mangov4 set grade = '일반'
+where id = 'sdhkk';
+
+-- [페이징 처리]
+select no, writer, subject, content, readhit, regdate
+from (
+    select rank() over(order by no desc) as ranking, no, writer, subject, content,
+    readhit, regdate from t_boards)
+where ranking between 1 and 3;
+
+
+-- [CONSTRAINT PART] *************************************************
+-- ['고양이' 정보 테이블 생성 및 데이터 추가]
+create table catdesc(
+    cno number primary key,
+    ctype varchar2(30),
+    location varchar2(50)
+);
+
+insert into catdesc values(1, '페르시아 고양이', '페르시아');
+insert into catdesc values(2, '샴 고양이', '태국');
+insert into catdesc values(3, '러시안 블루', '러시아');
+
+select * from catdesc;
+commit;
+
+create table catinfo(
+    cname varchar2(30) unique,
+    cweight number,
+    guardian varchar2(40) not null,
+    cno number not null
+);
+
+-- [무결성 제약조건 생성]
+alter table catinfo
+add constraint catinfo
+foreign key(cno)
+references catdesc(cno);
+
+-- [catinfo 테이블_ 데이터 추가]
+desc catinfo;
+
+-- cweight 컬럼은 not null 제약 조건이 없어 null 입력 가능
+insert into catinfo values('망고', null, '이동환', 1);
+insert into catinfo values('칠득', 2.5, '박보검', 3);
+
+-- guardian 컬럼은 not null 제약 조건이 있어 null 입력 불가능
+insert into catinfo values('루비', 7.5, null, 2);
+
+-- cno 컬럼에 추가하고자 하는 number가 없음, parent key not found
+insert into catinfo values('율무', 7.5, '박보영', 5);
+
+-- cname 컬럼은 unique 제약 조건이 있어 중복이 불가능
+insert into catinfo values('망고', 6.4, '이동환', 1);
+
+-- [primary key]
+create table catinfo01(
+    cname varchar2(30) primary key,
+    cweight number,
+    guardian varchar2(40) not null,
+    cno number
+);
+
+-- 정상적인 데이터 추가 
+insert into catinfo01 values('치타', null, '권지용', 2);
+
+-- primary key는 반드시 입력 되어야 함. (unique + not null)
+insert into catinfo01 values(null, 5.5, '손예진', 3);
+
+
+-- [check 제약 조건]
+create table catinfo02(
+    cname varchar2(30) primary key,
+    cweight number,
+    cgender varchar(5) check(cgender in ('m', 'f')),
+    guardian varchar2(40) not null,
+    carefee number check(carefee >= 500),
+    cno number
+);
+
+select * from catinfo02;
+
+-- 정상적인 데이터 추가
+insert into catinfo02 values('소망', null, 'm', '한지민', 5000, 1);
+
+-- carefee 컬럼 오류 (제약 조건 위반, carefee 500 이하)
+insert into catinfo02 values('봉봉', null, 'm', '지현우', 300, 1);
+
+-- cgender 컬럼 오류 (제약 조건 위반, 지정한 데이터 이외 다른 데이터 입력)
+insert into catinfo02 values('마리', null, 'k', '김혜자', 3200, 2);
+
+
+-- [USER_CONSTRAINTS 조회]
+select t.table_name, t.constraint_name, t.constraint_type, t.status, 
+c.column_name, t.search_condition
+from user_constraints t, user_cons_columns c
+where t.table_name = c.table_name
+and t.constraint_name = c.constraint_name
+and t.table_name = upper('&table_name');
