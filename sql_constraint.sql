@@ -114,3 +114,16 @@ commit;
 
 desc user_cons_columns;
 select * from user_cons_columns where table_name = 'SALES';
+
+-- 제약 조건의 이름 변경
+alter table employees rename constraint sys_c007010 to employees_id_pk;
+alter table employees rename constraint sys_C007009 to employees_password_nn;
+alter table employees rename constraint sys_C007008 to employees_name_nn;
+
+-- 제약 조건의 이름을 명시적으로 지정
+create table emp07(
+    empno number constraint emp07_empno_pk primary key,
+    ename varchar2(10) constraint emp07_ename_nn not null,
+    job varchar2(9) constraint emp07_job_uk unique,
+    deptno number constraint emp07_deptno_fk references dept(deptno)
+);
